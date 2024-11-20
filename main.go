@@ -25,7 +25,11 @@ func main() {
 	UserHandler = user.NewUserHandler(user.NewUserRepository())
 
 	e := echo.New()
+
+	// Login and user CRUD0
 	e.POST("/login", UserHandler.Login)
+	e.GET("/users", UserHandler.GetAllUsers)
+	e.POST("/users", UserHandler.Create)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

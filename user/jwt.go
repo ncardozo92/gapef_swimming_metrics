@@ -15,7 +15,7 @@ const (
 
 var JWT_SECRET string = os.Getenv("JWT_SECRET")
 
-func generateJWT(user User) (string, error) {
+func generateJWT(user Entity) (string, error) {
 	now := time.Now().Unix()
 	tokenGenerator := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{

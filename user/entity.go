@@ -1,9 +1,9 @@
 package user
 
-type User struct {
+type Entity struct {
 	Id       string `bson:"_id"` // tag used by mongoDB driver for mapping data
-	Email    string
-	Username string
-	Password string
-	Role     string
+	Email    string `bson:"email"`
+	Username string `bson:"username"`
+	Password string `bson:"password"`
+	Role     string `bson:"role"`
 }

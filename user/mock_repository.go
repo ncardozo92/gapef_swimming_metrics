@@ -33,11 +33,25 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method.
+func (m *MockRepository) Create(entity Entity) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", entity)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockRepositoryMockRecorder) Create(entity interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRepository)(nil).Create), entity)
+}
+
 // FindByUsername mocks base method.
-func (m *MockRepository) FindByUsername(id string) (User, error, bool) {
+func (m *MockRepository) FindByUsername(id string) (Entity, error, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByUsername", id)
-	ret0, _ := ret[0].(User)
+	ret0, _ := ret[0].(Entity)
 	ret1, _ := ret[1].(error)
 	ret2, _ := ret[2].(bool)
 	return ret0, ret1, ret2
@@ -49,16 +63,17 @@ func (mr *MockRepositoryMockRecorder) FindByUsername(id interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByUsername", reflect.TypeOf((*MockRepository)(nil).FindByUsername), id)
 }
 
-// doSomething mocks base method.
-func (m *MockRepository) doSomething() string {
+// GetUsers mocks base method.
+func (m *MockRepository) GetUsers(page, size int64) ([]Entity, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "doSomething")
-	ret0, _ := ret[0].(string)
-	return ret0
+	ret := m.ctrl.Call(m, "GetUsers", page, size)
+	ret0, _ := ret[0].([]Entity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// doSomething indicates an expected call of doSomething.
-func (mr *MockRepositoryMockRecorder) doSomething() *gomock.Call {
+// GetUsers indicates an expected call of GetUsers.
+func (mr *MockRepositoryMockRecorder) GetUsers(page, size interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "doSomething", reflect.TypeOf((*MockRepository)(nil).doSomething))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockRepository)(nil).GetUsers), page, size)
 }

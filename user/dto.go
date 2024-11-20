@@ -11,3 +11,21 @@ type DTO struct {
 type LoginDTO struct {
 	Token string `json:"token"`
 }
+
+func toDTO(e Entity) DTO {
+	return DTO{
+		Id:       e.Id,
+		Email:    e.Email,
+		Username: e.Username,
+		Role:     e.Role,
+	}
+}
+
+func fromDTO(d DTO) Entity {
+	return Entity{
+		Email:    d.Email,
+		Username: d.Username,
+		Password: d.Password,
+		Role:     d.Role,
+	}
+}
