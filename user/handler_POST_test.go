@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
+	"github.com/ncardozo92/gapef_swimming_metrics/constants"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,4 +33,36 @@ func TestCreateUserSuccess(t *testing.T) {
 
 	assert.NoError(t, handler.Create(context))
 	assert.Equal(t, http.StatusCreated, recorder.Code)
+}
+
+func TestCreateUserInvalidDTOFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	mockUserRepository := NewMockRepository(controller)
+	handler := NewUserHandler(mockUserRepository)
+	defer controller.Finish()
+
+	// test table
+	testCases := []DTO{
+		{Email: "NCARDOZO", Username: "ncardozo", Password: "1234asdf", Role: constants.ROLE_ATLETHE},
+		{Email: "ncardozo@gapef.com.ar", Username: "", Password: "1234asdf", Role: constants.ROLE_ATLETHE},
+		{Email: "ncardozo@gapef.com.ar", Username: "ncardozo", Password: "", Role: constants.ROLE_ATLETHE},
+		{Email: "ncardozo@gapef.com.ar", Username: "ncardozo", Password: "1234asdf", Role: "undefined"},
+	}
+
+	e := echo.New()
+
+	for _, testCase := range testCases {
+
+		jsonMarshall, _ := json.Marshal(testCase)
+
+		request := httptest.NewRequest(http.MethodPost, "/users", strings.NewReader(string(jsonMarshall)))
+		request.Header.Set("Content-Type", "application/json")
+
+		recorder := httptest.NewRecorder()
+		context := e.NewContext(request, recorder)
+
+		assert.NoError(t, handler.Create(context))
+		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	}
+
 }

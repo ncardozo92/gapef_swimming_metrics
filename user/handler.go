@@ -3,9 +3,11 @@ package user
 import (
 	"log"
 	"net/http"
+	"regexp"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"github.com/ncardozo92/gapef_swimming_metrics/constants"
 	"github.com/ncardozo92/gapef_swimming_metrics/custom_error"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -14,7 +16,12 @@ const (
 	MESSAGE_USER_NOT_FOUND     = "ususario no encontrado"
 	MESSAGE_INCORRECT_PASSWORD = "la contraseña es incorrecta"
 	MESSAGE_INTERNAL_ERROR     = "no pudimos autenticar al usuario"
-	MESSAGE_BINDING_ERROR      = "el cuerpo de la respuesta no es válido"
+	MESSAGE_BINDING_ERROR      = "el formato del cuerpo de la solicitud no es válido"
+	MESSAGE_VALIDATION_ERROR   = "la solicitud posee datos inválidos"
+	DETAIL_INVALID_EMAIL       = "El email no es válido"
+	DETAIL_INVALID_USERNAME    = "El username no puede ser un string vacío"
+	DETAIL_INVALID_PASSWORD    = "La password no puede ser un string vacío"
+	DETAIL_INVALID_ROLE        = "El rol suministrado no es válido"
 )
 
 type Handler interface {
@@ -103,6 +110,13 @@ func (handler UserHandler) Create(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, custom_error.DTO{Message: "El DTO no es válido"})
 	}
 
+	var validationErrorDetails []string = validateDTO(dto)
+
+	if len(validationErrorDetails) > 0 {
+		return context.JSON(http.StatusBadRequest,
+			custom_error.DTO{Message: MESSAGE_VALIDATION_ERROR, Details: validationErrorDetails})
+	}
+
 	entity := fromDTO(dto)
 
 	// Storing hashed password
@@ -122,6 +136,29 @@ func (handler UserHandler) Create(context echo.Context) error {
 	}
 
 	return context.JSON(http.StatusCreated, "")
+}
+
+func validateDTO(dto DTO) []string {
+	details := []string{}
+	emailRegex := regexp.MustCompile(constants.REGEX_EMAIL_VALIDATION)
+
+	if !emailRegex.Match([]byte(dto.Email)) {
+		details = append(details, DETAIL_INVALID_EMAIL)
+	}
+
+	if len(dto.Username) == 0 {
+		details = append(details, DETAIL_INVALID_USERNAME)
+	}
+
+	if len(dto.Password) == 0 {
+		details = append(details, DETAIL_INVALID_PASSWORD)
+	}
+
+	if dto.Role != constants.ROLE_ADMIN && dto.Role != constants.ROLE_ATLETHE && dto.Role != constants.ROLE_COACH {
+		details = append(details, DETAIL_INVALID_ROLE)
+	}
+
+	return details
 }
 
 // Returns a new instance of UserHandler
