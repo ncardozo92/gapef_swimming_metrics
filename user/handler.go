@@ -13,15 +13,17 @@ import (
 )
 
 const (
-	MESSAGE_USER_NOT_FOUND     = "ususario no encontrado"
-	MESSAGE_INCORRECT_PASSWORD = "la contraseña es incorrecta"
-	MESSAGE_INTERNAL_ERROR     = "no pudimos autenticar al usuario"
-	MESSAGE_BINDING_ERROR      = "el formato del cuerpo de la solicitud no es válido"
-	MESSAGE_VALIDATION_ERROR   = "la solicitud posee datos inválidos"
-	DETAIL_INVALID_EMAIL       = "El email no es válido"
-	DETAIL_INVALID_USERNAME    = "El username no puede ser un string vacío"
-	DETAIL_INVALID_PASSWORD    = "La password no puede ser un string vacío"
-	DETAIL_INVALID_ROLE        = "El rol suministrado no es válido"
+	MESSAGE_USER_NOT_FOUND      = "ususario no encontrado"
+	MESSAGE_INCORRECT_PASSWORD  = "la contraseña es incorrecta"
+	MESSAGE_INTERNAL_ERROR      = "no pudimos autenticar al usuario"
+	MESSAGE_BINDING_ERROR       = "el formato del cuerpo de la solicitud no es válido"
+	MESSAGE_VALIDATION_ERROR    = "la solicitud posee datos inválidos"
+	MESSAGE_USER_ALREADY_EXISTS = "Ya existe un usuario con el mismo username o email"
+	MESSAGE_USER_CREATION_ERROR = "No se ha podido crear al usuario"
+	DETAIL_INVALID_EMAIL        = "El email no es válido"
+	DETAIL_INVALID_USERNAME     = "El username no puede ser un string vacío"
+	DETAIL_INVALID_PASSWORD     = "La password no puede ser un string vacío"
+	DETAIL_INVALID_ROLE         = "El rol suministrado no es válido"
 )
 
 type Handler interface {
@@ -119,6 +121,16 @@ func (handler UserHandler) Create(context echo.Context) error {
 
 	entity := fromDTO(dto)
 
+	userExists, findingUserErr := handler.userRepository.Exists(entity)
+
+	if findingUserErr != nil {
+		return context.JSON(http.StatusInternalServerError, custom_error.DTO{Message: MESSAGE_USER_CREATION_ERROR})
+	}
+
+	if userExists {
+		return context.JSON(http.StatusConflict, custom_error.DTO{Message: MESSAGE_USER_ALREADY_EXISTS})
+	}
+
 	// Storing hashed password
 	hashedPassword, hashingErr := bcrypt.GenerateFromPassword([]byte(entity.Password), bcrypt.DefaultCost)
 
@@ -132,7 +144,8 @@ func (handler UserHandler) Create(context echo.Context) error {
 	saveErr := handler.userRepository.Create(entity)
 
 	if saveErr != nil {
-		return context.JSON(http.StatusInternalServerError, custom_error.DTO{Message: "No se pudo guardar el usuario en la DB"})
+		log.Println(saveErr)
+		return context.JSON(http.StatusInternalServerError, custom_error.DTO{Message: MESSAGE_USER_CREATION_ERROR})
 	}
 
 	return context.JSON(http.StatusCreated, "")

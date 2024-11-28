@@ -17,6 +17,7 @@ type Repository interface {
 	FindByUsername(id string) (Entity, error, bool)
 	GetUsers(page, size int64) ([]Entity, error)
 	Create(entity Entity) error
+	Exists(entity Entity) (bool, error)
 }
 
 type UserRepository struct {
@@ -79,4 +80,26 @@ func (repository UserRepository) Create(entity Entity) error {
 	} else {
 		return nil
 	}
+}
+
+func (repository UserRepository) Exists(entity Entity) (bool, error) {
+
+	goContext := context.TODO()
+
+	filter := bson.D{
+		{Key: "$or",
+			Value: bson.A{
+				bson.D{{Key: "username", Value: bson.D{{Key: "$eq", Value: entity.Username}}}},
+				bson.D{{Key: "email", Value: bson.D{{Key: "$eq", Value: entity.Email}}}},
+			},
+		},
+	}
+
+	result, findingErr := repository.Database.Collection(USER_COLLECTION).Find(goContext, filter)
+
+	if findingErr != nil {
+		return false, findingErr
+	}
+
+	return result.Next(goContext), nil
 }

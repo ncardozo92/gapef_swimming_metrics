@@ -47,6 +47,21 @@ func (mr *MockRepositoryMockRecorder) Create(entity interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRepository)(nil).Create), entity)
 }
 
+// Exists mocks base method.
+func (m *MockRepository) Exists(entity Entity) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Exists", entity)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Exists indicates an expected call of Exists.
+func (mr *MockRepositoryMockRecorder) Exists(entity interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockRepository)(nil).Exists), entity)
+}
+
 // FindByUsername mocks base method.
 func (m *MockRepository) FindByUsername(id string) (Entity, error, bool) {
 	m.ctrl.T.Helper()

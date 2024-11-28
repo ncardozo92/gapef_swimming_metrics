@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -24,6 +25,7 @@ func TestCreateUserSuccess(t *testing.T) {
 	requestDTO, _ := json.Marshal(DTO{Email: "ncardozo@gapef.com.ar", Username: "ncardozo", Password: "anitaLAVAlaTina", Role: "ATLETHE"})
 
 	mockUserRepository.EXPECT().Create(gomock.Any()).Return(nil)
+	mockUserRepository.EXPECT().Exists(gomock.Any()).Return(false, nil)
 
 	request := httptest.NewRequest(http.MethodPost, "/users", strings.NewReader(string(requestDTO)))
 	request.Header.Set("Content-Type", "application/json")
@@ -65,4 +67,58 @@ func TestCreateUserInvalidDTOFails(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, recorder.Code)
 	}
 
+}
+
+func TestCreateDuplicatedUserFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	mockUserRepository := NewMockRepository(controller)
+	handler := NewUserHandler(mockUserRepository)
+	defer controller.Finish()
+
+	e := echo.New()
+
+	testCasesDtos := []DTO{
+		{Email: "ncardozo@gapef.com.ar", Username: "ncardozo92", Password: "1234asdf", Role: constants.ROLE_ATLETHE},
+		{Email: "nc92030@gapef.com.ar", Username: "ncardozo", Password: "1234asdf", Role: constants.ROLE_ATLETHE},
+	}
+
+	for _, dto := range testCasesDtos {
+
+		mockUserRepository.EXPECT().Exists(gomock.Any()).Return(true, nil)
+		mockUserRepository.EXPECT().Create(gomock.Any()).Times(0)
+
+		json, _ := json.Marshal(dto)
+		request := httptest.NewRequest(http.MethodPost, "/users", strings.NewReader(string(json)))
+		request.Header.Set("Content-Type", "application/json")
+
+		recorder := httptest.NewRecorder()
+		context := e.NewContext(request, recorder)
+
+		assert.NoError(t, handler.Create(context))
+		assert.Equal(t, http.StatusConflict, recorder.Code)
+	}
+}
+
+func TestCreateUserFindExistingFails(t *testing.T) {
+	controller := gomock.NewController(t)
+	mockUserRepository := NewMockRepository(controller)
+	handler := NewUserHandler(mockUserRepository)
+	defer controller.Finish()
+
+	e := echo.New()
+
+	dto := DTO{Email: "nc92030@gapef.com.ar", Username: "ncardozo", Password: "1234asdf", Role: constants.ROLE_ATLETHE}
+
+	mockUserRepository.EXPECT().Exists(gomock.Any()).Return(false, errors.New("Opps..."))
+	mockUserRepository.EXPECT().Create(gomock.Any()).Times(0)
+
+	json, _ := json.Marshal(dto)
+	request := httptest.NewRequest(http.MethodPost, "/users", strings.NewReader(string(json)))
+	request.Header.Set("Content-Type", "application/json")
+
+	recorder := httptest.NewRecorder()
+	context := e.NewContext(request, recorder)
+
+	assert.NoError(t, handler.Create(context))
+	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
 }
