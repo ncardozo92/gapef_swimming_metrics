@@ -71,6 +71,7 @@ func (repository UserRepository) GetUsers(page, size int64) ([]Entity, error) {
 	return usersList, nil
 }
 
+// inserts a new user at the collection
 func (repository UserRepository) Create(entity Entity) error {
 
 	_, insertErr := repository.Database.Collection(USER_COLLECTION).InsertOne(context.TODO(), entity)
@@ -82,6 +83,7 @@ func (repository UserRepository) Create(entity Entity) error {
 	}
 }
 
+// checks if a user already has username or password
 func (repository UserRepository) Exists(entity Entity) (bool, error) {
 
 	goContext := context.TODO()

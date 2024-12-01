@@ -1,11 +1,11 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"github.com/ncardozo92/gapef_swimming_metrics/logging"
 	"github.com/ncardozo92/gapef_swimming_metrics/user"
 )
 
@@ -17,7 +17,7 @@ func main() {
 
 	if isDevEnvironment() {
 		if err := godotenv.Load(".env"); err != nil {
-			log.Fatal("cannot read .env file", err.Error())
+			logging.LogFatal("cannot read .env file, %v", err.Error())
 		}
 	}
 
@@ -31,7 +31,9 @@ func main() {
 	e.GET("/users", UserHandler.GetAllUsers)
 	e.POST("/users", UserHandler.Create)
 
-	e.Logger.Fatal(e.Start(":8080"))
+	if launchErr := e.Start(":8080"); launchErr != nil {
+		logging.LogFatal("Cannot start application")
+	}
 }
 
 func isDevEnvironment() bool {
@@ -40,7 +42,7 @@ func isDevEnvironment() bool {
 	if len(os.Args) > 1 {
 		for _, arg := range os.Args {
 			if arg == DEV_FLAG {
-				log.Println("environment set for development")
+				logging.LogInfo("environment set for development")
 				result = true
 				break
 			}

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/ncardozo92/gapef_swimming_metrics/logging"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -23,7 +24,7 @@ func GetDatabase() *mongo.Database {
 	dbName := os.Getenv("MONGODB_DATABASE_NAME")
 
 	connectionString := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s?authSource=admin", username, password, host, port, dbName)
-	log.Println("Database connection string:", connectionString)
+	logging.LogInfo("Database connection string: %s", connectionString)
 
 	if database == nil {
 
