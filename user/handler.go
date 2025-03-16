@@ -26,6 +26,9 @@ const (
 	DETAIL_INVALID_USERNAME       = "El username no puede ser un string vacío"
 	DETAIL_INVALID_PASSWORD       = "La password no puede ser un string vacío"
 	DETAIL_INVALID_ROLE           = "El rol suministrado no es válido"
+
+	PATH_LOGIN = "/login"
+	PATH_USERS = "/users"
 )
 
 type Handler interface {

@@ -26,10 +26,18 @@ func main() {
 
 	e := echo.New()
 
+	// registering middlewares
+	e.Use(user.CustomJwtMiddleware)
+
 	// Login and user CRUD
-	e.POST("/login", UserHandler.Login)
-	e.GET("/users", UserHandler.GetAllUsers)
-	e.POST("/users", UserHandler.Create)
+	e.POST(user.PATH_LOGIN, UserHandler.Login)
+
+	e.GET(user.PATH_USERS, UserHandler.GetAllUsers, user.CoachAccessMiddleware)
+	e.POST(user.PATH_USERS, UserHandler.Create, user.CoachAccessMiddleware)
+
+	users_ops := e.Group(user.PATH_USERS)
+
+	users_ops.Use()
 
 	if launchErr := e.Start(":8080"); launchErr != nil {
 		logging.LogFatal("Cannot start application")

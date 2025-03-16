@@ -7,7 +7,9 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
 	"github.com/ncardozo92/gapef_swimming_metrics/constants"
@@ -121,4 +123,26 @@ func TestCreateUserFindExistingFails(t *testing.T) {
 
 	assert.NoError(t, handler.Create(context))
 	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+}
+
+func TestValidateJWTSuccess(t *testing.T) {
+	jwtToken, _ := generateJWTForTesting("qwer1234", "ncardozo", time.Now().Unix()+(5*60))
+
+	validationErr := validateJWT(jwtToken)
+
+	assert.NoError(t, validationErr)
+}
+
+func generateJWTForTesting(id, username string, erxpireDateInSeconds int64) (string, error) {
+	now := time.Now().Unix()
+	tokenGenerator := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"iss":        "GAPEF",
+			"sub":        username,
+			JWT_FIELD_ID: id,
+			"iat":        now,
+			"exp":        erxpireDateInSeconds,
+		})
+
+	return tokenGenerator.SignedString([]byte(JWT_SECRET))
 }

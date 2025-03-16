@@ -11,16 +11,9 @@ var (
 	errorLogger   *log.Logger
 )
 
-// Init allways is executed before the main function
+// Initialize the loggers
 func init() {
-	//logFile, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-
 	logOutput := os.Stdout
-	/*
-		if err != nil {
-			log.Fatalf("error creating/opening the log file: %v", err)
-		}
-	*/
 
 	infoLogger = log.New(logOutput, "INFO: ", log.Ldate|log.Ltime)
 	warningLogger = log.New(logOutput, "WARNING: ", log.Ldate|log.Ltime)
